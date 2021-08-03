@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[cfg(test)]
-extern crate bincode;
-extern crate cita_types as types;
-#[macro_use]
-extern crate lazy_static;
+use lazy_static::lazy_static;
 
 pub type PrivKey = H256;
 pub type PubKey = H512;
@@ -37,7 +33,7 @@ pub use self::error::*;
 pub use self::keypair::*;
 pub use self::signature::*;
 pub use self::signer::Signer;
-use crate::types::{Address, H256, H512};
+use cita_types::{Address, H256, H512};
 use secp256k1::All;
 
 lazy_static! {

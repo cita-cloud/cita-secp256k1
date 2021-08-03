@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use super::{Address, Error, PrivKey, PubKey, SECP256K1};
-use crate::types::H160;
 use cita_crypto_trait::CreateKey;
+use cita_types::H160;
 use hashable::Hashable;
 use rustc_serialize::hex::ToHex;
 use secp256k1::key;
@@ -87,8 +87,8 @@ impl CreateKey for KeyPair {
 #[cfg(test)]
 mod tests {
     use super::{KeyPair, PrivKey};
-    use crate::types::H256;
     use cita_crypto_trait::CreateKey;
+    use cita_types::H256;
     use std::str::FromStr;
 
     #[test]

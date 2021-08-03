@@ -15,8 +15,8 @@
 use super::{
     pubkey_to_address, Address, Error, Message, PrivKey, PubKey, SECP256K1, SIGNATURE_BYTES_LEN,
 };
-use crate::types::H256;
 use cita_crypto_trait::Sign;
+use cita_types::H256;
 use rlp::*;
 use rustc_serialize::hex::ToHex;
 use secp256k1::key::{PublicKey, SecretKey};
@@ -251,8 +251,7 @@ impl DerefMut for Signature {
 pub fn sign(privkey: &PrivKey, message: &Message) -> Result<Signature, Error> {
     let context = &SECP256K1;
     // no way to create from raw byte array.
-    let sec: &SecretKey =
-        unsafe { &*(privkey as *const types::H256 as *const secp256k1::SecretKey) };
+    let sec: &SecretKey = unsafe { &*(privkey as *const H256 as *const secp256k1::SecretKey) };
     let s = context.sign_recoverable(&SecpMessage::from_slice(&message.0[..])?, sec);
     let (rec_id, data) = s.serialize_compact();
     let mut data_arr = [0; 65];
@@ -323,8 +322,7 @@ impl Sign for Signature {
     fn sign(privkey: &Self::PrivKey, message: &Self::Message) -> Result<Self, Self::Error> {
         let context = &SECP256K1;
         // no way to create from raw byte array.
-        let sec: &SecretKey =
-            unsafe { &*(privkey as *const types::H256 as *const secp256k1::SecretKey) };
+        let sec: &SecretKey = unsafe { &*(privkey as *const H256 as *const secp256k1::SecretKey) };
         let msg = SecpMessage::from_slice(&message.0[..]).unwrap();
         let s = context.sign_recoverable(&msg, sec);
         let (rec_id, data) = s.serialize_compact();
@@ -391,9 +389,9 @@ impl Sign for Signature {
 mod tests {
     use super::super::KeyPair;
     use super::{PrivKey, Signature};
-    use crate::types::H256;
     use bincode::{deserialize, serialize, Infinite};
     use cita_crypto_trait::{CreateKey, Sign};
+    use cita_types::H256;
     use hashable::Hashable;
     use std::str::FromStr;
 
