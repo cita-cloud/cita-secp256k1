@@ -19,7 +19,7 @@ serde = "1.0"
 bincode = "0.8"
 
 [features]
-default = ["sha3hash"]
+default = []
 sha3hash = ["hashable/sha3hash"]
 blake2bhash = ["hashable/blake2bhash"]
 sm3hash = ["hashable/sm3hash"]
