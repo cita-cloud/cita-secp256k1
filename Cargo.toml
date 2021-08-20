@@ -1,7 +1,8 @@
 [package]
 name = "cita-secp256k1"
-version = "0.6.0"
+version = "0.1.0"
 authors = ["Rivtower Technologies <contact@rivtower.com>"]
+description = "A library library provide secp256k1 cryptography method"
 license = "Apache-2.0"
 edition = "2018"
 
@@ -9,9 +10,9 @@ edition = "2018"
 secp256k1 = {version = "0.20", features = ["rand-std", "recovery"]}
 lazy_static = "1.1"
 rustc-serialize = "0.3"
-cita-types = { git = "https://github.com/cita-cloud/cita-types",branch = "main" }
-hashable = { git = "https://github.com/cita-cloud/hashable",branch = "main" }
-cita-crypto-trait = { git = "https://github.com/cita-cloud/cita-crypto-trait",branch = "main" }
+cita-types = "0.1"
+hashable = { package = "cita-hashable", version = "0.1" }
+cita-crypto-trait = "0.1"
 rlp = "0.5"
 serde = "1.0"
 
