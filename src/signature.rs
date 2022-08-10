@@ -19,9 +19,9 @@ use cita_crypto_trait::Sign;
 use cita_types::H256;
 use rlp::*;
 use rustc_serialize::hex::ToHex;
-use secp256k1::key::{PublicKey, SecretKey};
+use secp256k1::{PublicKey, SecretKey};
 use secp256k1::{
-    recovery::RecoverableSignature, recovery::RecoveryId, Error as SecpError,
+    ecdsa::RecoverableSignature, ecdsa::RecoveryId, Error as SecpError,
     Message as SecpMessage,
 };
 use serde::de::{Error as SerdeError, SeqAccess, Visitor};
@@ -252,7 +252,7 @@ pub fn sign(privkey: &PrivKey, message: &Message) -> Result<Signature, Error> {
     let context = &SECP256K1;
     // no way to create from raw byte array.
     let sec: &SecretKey = unsafe { &*(privkey as *const H256 as *const secp256k1::SecretKey) };
-    let s = context.sign_recoverable(&SecpMessage::from_slice(&message.0[..])?, sec);
+    let s = context.sign_ecdsa_recoverable(&SecpMessage::from_slice(&message.0[..])?, sec);
     let (rec_id, data) = s.serialize_compact();
     let mut data_arr = [0; 65];
 
@@ -281,7 +281,7 @@ pub fn verify_public(
     };
 
     let public_key = PublicKey::from_slice(&pdata)?;
-    match context.verify(&SecpMessage::from_slice(&message.0[..])?, &sig, &public_key) {
+    match context.verify_ecdsa(&SecpMessage::from_slice(&message.0[..])?, &sig, &public_key) {
         Ok(_) => Ok(true),
         Err(SecpError::IncorrectSignature) => Ok(false),
         Err(x) => Err(Error::from(x)),
@@ -304,7 +304,7 @@ pub fn recover(signature: &Signature, message: &Message) -> Result<PubKey, Error
         &signature[0..64],
         RecoveryId::from_i32(i32::from(signature[64]))?,
     )?;
-    let publ = context.recover(&SecpMessage::from_slice(&message.0[..])?, &rsig)?;
+    let publ = context.recover_ecdsa(&SecpMessage::from_slice(&message.0[..])?, &rsig)?;
     let serialized = publ.serialize_uncompressed();
 
     let mut pubkey = PubKey::default();
@@ -324,7 +324,7 @@ impl Sign for Signature {
         // no way to create from raw byte array.
         let sec: &SecretKey = unsafe { &*(privkey as *const H256 as *const secp256k1::SecretKey) };
         let msg = SecpMessage::from_slice(&message.0[..]).unwrap();
-        let s = context.sign_recoverable(&msg, sec);
+        let s = context.sign_ecdsa_recoverable(&msg, sec);
         let (rec_id, data) = s.serialize_compact();
         let mut data_arr = [0; 65];
 
@@ -340,7 +340,7 @@ impl Sign for Signature {
             &self.0[0..64],
             RecoveryId::from_i32(i32::from(self.0[64]))?,
         )?;
-        let publ = context.recover(&SecpMessage::from_slice(&message.0[..])?, &rsig)?;
+        let publ = context.recover_ecdsa(&SecpMessage::from_slice(&message.0[..])?, &rsig)?;
         let serialized = publ.serialize_uncompressed();
 
         let mut pubkey = PubKey::default();
@@ -367,7 +367,7 @@ impl Sign for Signature {
         };
 
         let publ = PublicKey::from_slice(&pdata)?;
-        match context.verify(&SecpMessage::from_slice(&message.0[..])?, &sig, &publ) {
+        match context.verify_ecdsa(&SecpMessage::from_slice(&message.0[..])?, &sig, &publ) {
             Ok(_) => Ok(true),
             Err(SecpError::IncorrectSignature) => Ok(false),
             Err(x) => Err(Error::from(x)),
@@ -389,7 +389,7 @@ impl Sign for Signature {
 mod tests {
     use super::super::KeyPair;
     use super::{PrivKey, Signature};
-    use bincode::{deserialize, serialize, Infinite};
+    use bincode::{deserialize, serialize};
     use cita_crypto_trait::{CreateKey, Sign};
     use cita_types::H256;
     use hashable::Hashable;
@@ -441,7 +441,7 @@ mod tests {
         let str = "".to_owned();
         let message = str.crypt_hash();
         let signature = Signature::sign(keypair.privkey().into(), &message.into()).unwrap();
-        let se_result = serialize(&signature, Infinite).unwrap();
+        let se_result = serialize(&signature).unwrap();
         let de_result: Signature = deserialize(&se_result).unwrap();
         assert_eq!(signature, de_result);
     }
